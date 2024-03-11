@@ -1,14 +1,33 @@
-export default function ResultModal({result,targetTime}){
-    return(
-        <dialog className="result-modal" open>
-            <h2>You {result}</h2>
-            <p>
-                Target Time was <strong>{targetTime}seconds.</strong>
-            </p>
-            <p>You stopped timer with <strong>X seconds left.</strong></p>
-            <form action="dialog">
-                <button>Close</button>
-            </form>
-        </dialog>
-    )
-}
+import { forwardRef, useImperativeHandle, useRef } from "react";
+export const ResultModal = forwardRef(function ResultModal(
+  { targetTime, remainingTime, onReset },
+  ref
+) {
+  const modal = useRef();
+  const result = remainingTime <= 0;
+  const timeFormatted = (remainingTime / 1000).toFixed(2);
+  const score = Math.round((1 - remainingTime / (targetTime * 1000)) * 100);
+  useImperativeHandle(ref, () => {
+    return {
+      open() {
+        modal.current.showModal();
+      },
+    };
+  });
+
+  return (
+    <dialog className="result-modal" ref={modal}>
+      {result && <h2>You Lost</h2>}
+      {!result && <h2>Your Score : {score}</h2>}
+      <p>
+        Target Time was <strong>{targetTime}seconds.</strong>
+      </p>
+      <p>
+        You stopped timer with <strong>{timeFormatted} seconds left.</strong>
+      </p>
+      <form action="dialog" onSubmit={onReset}>
+        <button>Close</button>
+      </form>
+    </dialog>
+  );
+});
